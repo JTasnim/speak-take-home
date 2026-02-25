@@ -74,7 +74,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                 {data.course.lessons.map((lesson) => (
                   <li key={lesson.id}>
                     <Link
-                      href={`/courses/${data.course.id}/lessons/${lesson.id}`}
+                      href={`/courses/${courseId}/lessons/${lesson.id}`}
                       className="block rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
                     >
                       <p className="font-medium text-gray-900">
