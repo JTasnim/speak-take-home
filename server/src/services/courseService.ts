@@ -3,8 +3,8 @@ import path from "path";
 import { Course, CourseSummary, Lesson } from "../types/course";
 import { HttpError } from "../types/http";
 
-// repo root = process.cwd() when running from /server? Actually depends how you start.
-// We'll resolve relative to this file: server/src/services -> server -> repo root.
+// repo root = process.cwd() when running from /server? Actually depends how you start
+// we'll resolve relative to this file: server/src/services -> server -> repo root
 const COURSE_PATH = path.resolve(__dirname, "../../../assets/course.json");
 
 type CourseDb = {
@@ -22,7 +22,7 @@ function readCourseFile(): CourseDb {
 
     return parsed;
   } catch (err) {
-    // If this happens, it's a developer/config issue not a user error.
+    // if this happens, it's a developer/config issue not a user error
     throw new HttpError(
       500,
       "COURSE_DB_LOAD_FAILED",
@@ -31,7 +31,7 @@ function readCourseFile(): CourseDb {
   }
 }
 
-// Load once at startup (simple + sufficient for take-home)
+
 const db = readCourseFile();
 
 export function listCourses(): CourseSummary[] {

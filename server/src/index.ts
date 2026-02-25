@@ -15,7 +15,7 @@ app.get("/health", (_req, res) => {
 // REST API
 app.use("/api/courses", coursesRouter);
 
-// Error handler (keep it after routes)
+// error handler
 app.use(
   (
     err: unknown,

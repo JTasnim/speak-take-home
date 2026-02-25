@@ -25,25 +25,28 @@ export default async function HomePage() {
         </p>
       </header>
 
-      {/* Error state */}
+      {/* error state */}
       {error ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-medium text-red-800">Couldn’t load courses</p>
+          <p className="text-sm font-medium text-red-800">
+            Couldn’t load courses
+          </p>
           <p className="mt-1 text-sm text-red-700">{error}</p>
           <p className="mt-2 text-xs text-red-700">
-            Make sure the server is running on <span className="font-mono">:3001</span>.
+            Make sure the server is running on{" "}
+            <span className="font-mono">:3001</span>.
           </p>
         </div>
       ) : null}
 
-      {/* Empty state */}
+      {/* empty state */}
       {!error && data?.courses?.length === 0 ? (
         <div className="rounded-lg border border-gray-200 p-4">
           <p className="text-sm text-gray-700">No courses found.</p>
         </div>
       ) : null}
 
-      {/* List */}
+      {/* list */}
       {!error && data?.courses?.length ? (
         <ul className="space-y-3">
           {data.courses.map((course) => (
