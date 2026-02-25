@@ -9,3 +9,5 @@ client/out
 
 server/node_modules
 server/dist
+
+command.py
