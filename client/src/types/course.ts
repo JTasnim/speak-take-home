@@ -25,3 +25,16 @@ export type CourseDetail = {
 export type GetCourseResponse = {
   course: CourseDetail;
 };
+
+export type LessonDetail = {
+  id: string;
+  title: string;
+  description?: string;
+
+  // Commit 5: audio support (optional)
+  audioUrl?: string; // or whatever your server returns
+};
+
+export type GetLessonResponse = {
+  lesson: LessonDetail;
+};
