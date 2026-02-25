@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getLesson } from "@/lib/course";
 
 type PageProps = {
@@ -57,11 +58,33 @@ export default async function LessonPage({ params }: PageProps) {
         ) : null}
       </header>
 
+      {/* Thumbnail (Commit 6 improvement) */}
+      {lesson?.thumbnailImageUrl ? (
+        <div className="mb-6 overflow-hidden rounded-xl border">
+          <div className="relative aspect-[16/9] w-full">
+            <Image
+              src={lesson.thumbnailImageUrl}
+              alt={lesson?.title ?? "Lesson thumbnail"}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Audio card */}
       <section className="rounded-xl border p-5">
         <h2 className="text-lg font-semibold">Audio</h2>
-        <p className="mt-2 text-sm text-gray-500">
-          No audio available for this lesson yet.
-        </p>
+
+        {/* If later your API adds lesson.audioUrl, this will automatically work */}
+        {lesson?.audioUrl ? (
+          <audio className="mt-3 w-full" controls src={lesson.audioUrl} />
+        ) : (
+          <p className="mt-2 text-sm text-gray-500">
+            No audio available for this lesson yet.
+          </p>
+        )}
       </section>
     </main>
   );
