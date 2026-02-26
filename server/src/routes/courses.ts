@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { getCourse, getLesson, listCourses } from "../services/courseService";
+import {
+  getCourse,
+  getLesson,
+  listCourses,
+} from "../services/courseService";
 
 export const coursesRouter = Router();
 

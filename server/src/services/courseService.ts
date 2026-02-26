@@ -1,11 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { Course, CourseSummary, Lesson } from "../types/course";
+import { AudioChunk, Course, CourseSummary, Lesson } from "../types/course";
 import { HttpError } from "../types/http";
 
-// repo root = process.cwd() when running from /server? Actually depends how you start
-// we'll resolve relative to this file: server/src/services -> server -> repo root
 const COURSE_PATH = path.resolve(__dirname, "../../../assets/course.json");
+const AUDIO_PATH = path.resolve(__dirname, "../../../assets/audio.json");
 
 type CourseDb = {
   courses: Course[];
@@ -22,7 +21,6 @@ function readCourseFile(): CourseDb {
 
     return parsed;
   } catch (err) {
-    // if this happens, it's a developer/config issue not a user error
     throw new HttpError(
       500,
       "COURSE_DB_LOAD_FAILED",
@@ -30,7 +28,6 @@ function readCourseFile(): CourseDb {
     );
   }
 }
-
 
 const db = readCourseFile();
 
@@ -64,4 +61,17 @@ export function getLesson(courseId: string, lessonId: string): Lesson {
     );
   }
   return lesson;
+}
+
+export function getAudioChunks(): AudioChunk[] {
+  try {
+    const raw = fs.readFileSync(AUDIO_PATH, "utf-8");
+    return JSON.parse(raw) as AudioChunk[];
+  } catch (err) {
+    throw new HttpError(
+      500,
+      "AUDIO_LOAD_FAILED",
+      "Failed to load audio chunks",
+    );
+  }
 }

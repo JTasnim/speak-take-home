@@ -1,10 +1,11 @@
-export default function Loading() {
+export default function LessonLoading() {
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <div className="h-6 w-40 animate-pulse rounded bg-gray-800/40" />
-      <div className="mt-6 h-10 w-3/4 animate-pulse rounded bg-gray-800/40" />
-      <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-gray-800/30" />
-      <div className="mt-10 h-28 w-full animate-pulse rounded bg-gray-800/30" />
+    <main className="min-h-screen px-4 py-4">
+      <div className="skeleton h-4 w-20 mb-4" />
+      <div className="skeleton h-8 w-3/4 mb-2" />
+      <div className="skeleton h-4 w-1/2 mb-6" />
+      <div className="skeleton h-48 w-full mb-4" />
+      <div className="skeleton h-64 w-full" />
     </main>
   );
 }

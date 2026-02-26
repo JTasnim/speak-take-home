@@ -1,8 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { apiGet } from "@/lib/api";
 import type { GetCourseResponse } from "@/types/course";
-
-let data: GetCourseResponse | null = null;
 
 type PageProps = {
   params: Promise<{
@@ -27,80 +26,136 @@ export default async function CourseDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6">
-      <Link
-        href="/"
-        className="mb-4 inline-block text-sm text-blue-600 hover:underline"
-      >
-        ← Back to courses
-      </Link>
+    <main className="min-h-screen">
+      {/* Back link */}
+      <div className="px-4 pt-4">
+        <Link href="/" className="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Courses
+        </Link>
+      </div>
 
-      {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-medium text-red-800">
-            Couldn’t load course
-          </p>
-          <p className="mt-1 text-sm text-red-700">{error}</p>
+      {error && (
+        <div className="px-4 pt-4">
+          <div className="recording-error animate-fade-in">
+            <p className="font-medium">{error}</p>
+          </div>
         </div>
-      ) : null}
+      )}
 
-      {!error && data ? (
-        <>
-          <header className="mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {data.course.title}
-            </h1>
+      {!error && data && (
+        <div className="animate-fade-in">
+          {/* Hero */}
+          {data.course.backgroundImageUrl && (
+            <div className="relative w-full aspect-[2/1] overflow-hidden">
+              <Image
+                src={data.course.backgroundImageUrl}
+                alt={data.course.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="512px"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(to bottom, transparent 30%, var(--color-bg) 100%)",
+                }}
+              />
+            </div>
+          )}
 
-            <p className="mt-2 text-sm text-gray-600">
-              {data.course.description?.trim()
-                ? data.course.description
-                : "No description provided."}
-            </p>
-          </header>
+          <div className="px-4 -mt-8 relative" style={{ zIndex: 1 }}>
+            <header className="mb-6">
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                {data.course.title}
+              </h1>
+              {data.course.subtitle && (
+                <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                  {data.course.subtitle}
+                </p>
+              )}
+              {data.course.language && (
+                <div className="mt-2">
+                  <span className="badge">{data.course.language}</span>
+                </div>
+              )}
+            </header>
 
-          <section>
-            <h2 className="mb-3 text-lg font-medium">Lessons</h2>
+            {/* Lessons */}
+            <section>
+              <h2
+                className="text-xs font-semibold uppercase tracking-wider mb-3"
+                style={{ color: "var(--color-text-muted)", letterSpacing: "0.08em" }}
+              >
+                {data.course.lessons.length} {data.course.lessons.length === 1 ? "Lesson" : "Lessons"}
+              </h2>
 
-            {data.course.lessons.length === 0 ? (
-              <p className="text-sm text-gray-600">
-                This course has no lessons.
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {data.course.lessons.map((lesson) => (
-                  <li key={lesson.id}>
-                    <Link
-                      href={`/courses/${courseId}/lessons/${lesson.id}`}
-                      className="block rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {lesson.title}
-                          </p>
-                          {lesson.description ? (
-                            <p className="mt-1 text-sm text-gray-600">
-                              {lesson.description}
-                            </p>
-                          ) : (
-                            <p className="mt-1 text-sm text-gray-500">
-                              No description.
-                            </p>
+              {data.course.lessons.length === 0 ? (
+                <div className="glass-card p-4 text-center">
+                  <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                    No lessons available yet.
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-2 stagger-children pb-6">
+                  {data.course.lessons.map((lesson, i) => (
+                    <li key={lesson.id}>
+                      <Link
+                        href={`/courses/${courseId}/lessons/${lesson.id}`}
+                        className="lesson-card"
+                      >
+                        {lesson.thumbnailImageUrl ? (
+                          <Image
+                            src={lesson.thumbnailImageUrl}
+                            alt={lesson.title}
+                            width={56}
+                            height={56}
+                            className="lesson-card-thumb"
+                          />
+                        ) : (
+                          <div
+                            className="lesson-card-thumb flex items-center justify-center"
+                            style={{
+                              background: "var(--gradient-subtle)",
+                              color: "var(--color-accent)",
+                              fontWeight: 700,
+                              fontSize: "1.1rem",
+                            }}
+                          >
+                            {i + 1}
+                          </div>
+                        )}
+
+                        <div className="lesson-card-info">
+                          <p className="lesson-card-title">{lesson.title}</p>
+                          {lesson.subtitle && (
+                            <p className="lesson-card-subtitle">{lesson.subtitle}</p>
                           )}
                         </div>
 
-                        <span className="shrink-0 text-sm text-gray-400">
-                          →
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </>
-      ) : null}
+                        <svg
+                          className="lesson-card-arrow"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -1,97 +1,116 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getLesson } from "@/lib/course";
-import type { GetLessonResponse } from "@/types/course";
+import { useParams } from "next/navigation";
+import { apiGet } from "@/lib/api";
+import type { GetLessonResponse, LessonDetail } from "@/types/course";
+import { RecordingPanel } from "@/components/RecordingPanel";
 
-let data: GetLessonResponse | null = null;
+export default function LessonPage() {
+  const params = useParams();
+  const courseId = params.courseId as string;
+  const lessonId = params.lessonId as string;
 
-type Params = {
-  courseId: string;
-  lessonId: string;
-};
+  const [lesson, setLesson] = useState<LessonDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-// Next 15+ may treat params as a Promise depending on setup
-type PageProps = {
-  params: Promise<Params> | Params;
-};
+  useEffect(() => {
+    async function fetchLesson() {
+      try {
+        const data = await apiGet<GetLessonResponse>(
+          `/api/courses/${courseId}/lessons/${lessonId}`
+        );
+        setLesson(data.lesson);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to load lesson");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchLesson();
+  }, [courseId, lessonId]);
 
-export default async function LessonPage({ params }: PageProps) {
-  const resolvedParams = "then" in params ? await params : params;
-  const { courseId, lessonId } = resolvedParams;
-
-  let data: any = null;
-  let error: string | null = null;
-
-  try {
-    data = await getLesson(courseId, lessonId);
-  } catch (e) {
-    error = e instanceof Error ? e.message : "Failed to load lesson";
+  if (loading) {
+    return (
+      <main className="min-h-screen px-4 py-4">
+        <div className="skeleton h-4 w-20 mb-4" />
+        <div className="skeleton h-8 w-3/4 mb-2" />
+        <div className="skeleton h-4 w-1/2 mb-6" />
+        <div className="skeleton h-48 w-full mb-4" />
+        <div className="skeleton h-64 w-full" />
+      </main>
+    );
   }
 
-  const lesson = data?.lesson;
+  if (error) {
+    return (
+      <main className="min-h-screen px-4 py-4">
+        <Link href={`/courses/${courseId}`} className="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back
+        </Link>
+        <div className="recording-error mt-4 animate-fade-in">
+          <p className="font-medium">{error}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <Link
-        href={`/courses/${courseId}`}
-        className="mb-6 inline-block text-sm text-blue-600 hover:underline"
-      >
-        ← Back to course
-      </Link>
+    <main className="min-h-screen animate-fade-in">
+      {/* Back link */}
+      <div className="px-4 pt-4">
+        <Link href={`/courses/${courseId}`} className="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to course
+        </Link>
+      </div>
 
-      {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-medium text-red-800">
-            Couldn’t load lesson
-          </p>
-          <p className="mt-1 text-sm text-red-700">{error}</p>
+      {/* Lesson thumbnail */}
+      {lesson?.thumbnailImageUrl && (
+        <div className="relative w-full aspect-[16/9] overflow-hidden mt-2">
+          <Image
+            src={lesson.thumbnailImageUrl}
+            alt={lesson.title ?? "Lesson"}
+            fill
+            className="object-cover"
+            priority
+            sizes="512px"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(to bottom, transparent 50%, var(--color-bg) 100%)",
+            }}
+          />
         </div>
-      ) : null}
+      )}
 
-      {!error && lesson ? (
-        <>
-          <header className="mb-6">
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {lesson.title}
-            </h1>
-            {lesson.subtitle ? (
-              <p className="mt-2 text-sm text-gray-400">{lesson.subtitle}</p>
-            ) : (
-              <p className="mt-2 text-sm text-gray-500">
-                No description provided.
-              </p>
-            )}
-          </header>
+      {/* Lesson info */}
+      <div className="px-4 -mt-8 relative" style={{ zIndex: 1 }}>
+        <header className="mb-6">
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+            {lesson?.title}
+          </h1>
+          {lesson?.subtitle && (
+            <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              {lesson.subtitle}
+            </p>
+          )}
+        </header>
 
-          {/* Commit 6: Thumbnail */}
-          {lesson.thumbnailImageUrl ? (
-            <div className="mb-6 overflow-hidden rounded-2xl border">
-              <div className="relative aspect-[16/9] w-full">
-                <Image
-                  src={lesson.thumbnailImageUrl}
-                  alt={lesson.title ?? "Lesson thumbnail"}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </div>
-          ) : null}
+        {/* Recording Panel */}
+        <RecordingPanel />
 
-          {/* Audio card */}
-          <section className="rounded-2xl border p-6">
-            <h2 className="text-lg font-semibold">Audio</h2>
-
-            {lesson.audioUrl ? (
-              <audio className="mt-3 w-full" controls src={lesson.audioUrl} />
-            ) : (
-              <p className="mt-2 text-sm text-gray-500">
-                No audio available for this lesson yet.
-              </p>
-            )}
-          </section>
-        </>
-      ) : null}
+        <div className="h-8" />
+      </div>
     </main>
   );
 }

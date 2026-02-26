@@ -1,30 +1,57 @@
 // client/src/types/course.ts
 
+export type CourseSummary = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  language?: string;
+  thumbnailImageUrl?: string;
+  backgroundImageUrl?: string;
+  lessonCount: number;
+};
+
+export type ListCoursesResponse = {
+  courses: CourseSummary[];
+};
+
 export type Lesson = {
   id: string;
   title: string;
-  description?: string;
   subtitle?: string;
   thumbnailImageUrl?: string;
-  audioUrl?: string;
 };
 
-export type Course = {
+export type CourseDetail = {
   id: string;
   title: string;
-  description?: string;
   subtitle?: string;
+  language?: string;
+  thumbnailImageUrl?: string;
+  backgroundImageUrl?: string;
   lessons: Lesson[];
 };
 
-export type GetCoursesResponse = {
-  courses: Course[];
+export type GetCourseResponse = {
+  course: CourseDetail;
 };
 
-export type GetCourseResponse = {
-  course: Course;
+export type LessonDetail = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  thumbnailImageUrl?: string;
 };
 
 export type GetLessonResponse = {
-  lesson: Lesson;
+  lesson: LessonDetail;
+};
+
+export type AudioChunk = {
+  type: string;
+  chunk: string;
+  isFinal: boolean;
+};
+
+export type GetAudioChunksResponse = {
+  chunks: AudioChunk[];
 };

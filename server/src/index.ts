@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { coursesRouter } from "./routes/courses";
+import { getAudioChunks } from "./services/courseService";
 import { HttpError } from "./types/http";
+import { setupWebSocketProxy } from "./ws/proxy";
 
 const app = express();
 
@@ -14,6 +16,11 @@ app.get("/health", (_req, res) => {
 
 // REST API
 app.use("/api/courses", coursesRouter);
+
+// Audio chunks endpoint (separate from courses)
+app.get("/api/audio-chunks", (_req, res) => {
+  res.json({ chunks: getAudioChunks() });
+});
 
 // error handler
 app.use(
@@ -37,6 +44,9 @@ app.use(
 );
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
+
+// Attach WebSocket proxy
+setupWebSocketProxy(server);
