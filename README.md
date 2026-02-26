@@ -1,6 +1,6 @@
 # Speak Full-stack Take-home
 
-A small language learning app where you can browse courses, pick a lesson, and practice speaking — your speech gets transcribed in real time through a WebSocket connection.
+A small language learning app where you can browse courses, pick a lesson, and practice speaking your speech gets transcribed in real time through a WebSocket connection.
 
 ## Getting Started
 
