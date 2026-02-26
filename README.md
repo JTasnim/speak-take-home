@@ -1,84 +1,79 @@
 # Speak Full-stack Take-home
 
-A language learning portal where users can browse courses, view lessons, and practice speaking with real-time transcription via WebSocket.
+A small language learning app where you can browse courses, pick a lesson, and practice speaking — your speech gets transcribed in real time through a WebSocket connection.
 
-## Prerequisites
+## Getting Started
 
-- **Node.js** v18+ (built with v23.11.0)
-- **npm** v9+
-
-## Installation
+You'll need **Node.js 18+** installed (I used v23, but anything 18+ should work fine).
 
 ```bash
-# Install root dependencies (concurrently)
+# install everything
 npm install
-
-# Install server dependencies
 npm --prefix server install
-
-# Install client dependencies
 npm --prefix client install
-```
 
-## Running the Application
-
-```bash
+# run both client and server
 npm run dev
 ```
 
-This starts both servers concurrently:
+The client will start on [http://localhost:3000](http://localhost:3000) and the server on [http://localhost:3001](http://localhost:3001).
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Client** (Next.js) | `http://localhost:3000` | React frontend |
-| **Server** (Express) | `http://localhost:3001` | REST API + WebSocket proxy |
-
-You can also run them individually:
-
+If you want to run them separately:
 ```bash
-npm run dev:server  # Server only on :3001
-npm run dev:client  # Client only on :3000
+npm run dev:server   # just the API server
+npm run dev:client   # just the Next.js frontend
 ```
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3001` | Server port |
-| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:3001` | Client → Server API base URL |
-| `NEXT_PUBLIC_WS_URL` | `ws://localhost:3001/ws` | Client → Server WebSocket URL |
+None required — everything works with defaults. But if you need to customize:
 
-No `.env` files are required — all defaults work out of the box.
+- `PORT` — server port (default: `3001`)
+- `NEXT_PUBLIC_API_BASE_URL` — where the client hits the API (default: `http://localhost:3001`)
+- `NEXT_PUBLIC_WS_URL` — WebSocket endpoint (default: `ws://localhost:3001/ws`)
 
-## Architecture
+## How It Works
+
+The app has three main screens:
+
+1. **Home** — shows all available courses with thumbnails and language tags
+2. **Course detail** — hero image at the top, list of lessons below
+3. **Lesson** — the interesting one: you see the lesson prompt and a record button
+
+When you tap Record on a lesson page, here's what happens under the hood:
+
+- The client fetches simulated audio chunks from `GET /api/audio-chunks`
+- It opens a WebSocket to the server at `/ws`
+- The server proxies that connection to `wss://api.usespeak-staging.com/public/v2/ws`, injecting the required `X-Access-Token` and `X-Client-Info` headers (browsers can't set custom headers on WebSocket connections, so the proxy is necessary)
+- Audio chunks get streamed to the upstream API at ~100ms intervals
+- Any `asrResult` messages that come back are displayed as live transcription text
+
+## Project Structure
 
 ```
-take-home-test/
-├── assets/              # Shared data files
-│   ├── course.json      # Course & lesson data
-│   └── audio.json       # Simulated audio chunks (base64)
-├── server/              # Node.js + Express backend
+├── assets/                 # course data + simulated audio chunks
+├── server/
 │   └── src/
-│       ├── index.ts           # Express app + routes + WS integration
-│       ├── routes/courses.ts  # REST API routes
-│       ├── services/courseService.ts  # Data access layer
-│       ├── ws/proxy.ts        # WebSocket proxy to Speak API
-│       └── types/             # TypeScript types
-└── client/              # Next.js frontend
+│       ├── index.ts        # express app, REST routes, WS setup
+│       ├── routes/         # course API endpoints
+│       ├── services/       # data access (reads from assets/)
+│       ├── ws/proxy.ts     # websocket proxy to Speak API
+│       └── types/          # shared types
+└── client/
     └── src/
-        ├── app/               # Pages (App Router)
-        ├── components/        # RecordingPanel UI
-        ├── hooks/             # useWebSocket hook
-        ├── lib/               # API client utilities
-        └── types/             # TypeScript types
+        ├── app/            # Next.js pages (App Router)
+        ├── components/     # RecordingPanel
+        ├── hooks/          # useWebSocket
+        ├── lib/            # API helpers
+        └── types/          # client-side types
 ```
 
-### Key Design Decisions
+## Notable Decisions
 
-- **WebSocket Proxy** (`server/src/ws/proxy.ts`): Browsers cannot set custom headers on WebSocket connections, so the server proxies client connections to `wss://api.usespeak-staging.com/public/v2/ws` with the required `X-Access-Token` and `X-Client-Info` headers. Messages are relayed bidirectionally.
+- **WebSocket proxy**: The Speak API requires custom headers that browsers don't allow on WS connections, so the Node server acts as a relay. It buffers messages if the upstream connection isn't ready yet.
 
-- **Simulated Recording**: The `RecordingPanel` component fetches audio chunks from `GET /api/audio-chunks` and streams them over the WebSocket at 100ms intervals, simulating a real-time microphone input. Transcription results (`asrResult` events) are displayed as they arrive.
+- **Client component for lesson page**: Most pages are server components, but the lesson page needs to be a client component since it manages WebSocket state and the record/stop interaction.
 
-- **Client-side Lesson Page**: The lesson page is a React client component (not a server component) because it needs interactive state management for the recording UI and WebSocket connection lifecycle.
+- **Simulated audio**: Rather than using the real microphone, the app sends pre-recorded base64 audio chunks from `assets/audio.json`. This makes it easy to demo without worrying about mic permissions.
 
-- **Mobile-first Dark Theme**: The UI uses a custom design system with glassmorphism cards, gradient accents, and smooth animations — optimized for a phone-sized viewport.
+- **Dark theme**: Went with a dark, mobile-first design — felt appropriate for a language learning app you'd use on your phone.
