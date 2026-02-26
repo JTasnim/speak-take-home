@@ -1,40 +1,30 @@
-export type CourseSummary = {
-  id: string;
-  title: string;
-  description?: string;
-  lessonCount: number;
-};
-
-export type ListCoursesResponse = {
-  courses: CourseSummary[];
-};
+// client/src/types/course.ts
 
 export type Lesson = {
   id: string;
   title: string;
   description?: string;
+  subtitle?: string;
+  thumbnailImageUrl?: string;
+  audioUrl?: string;
 };
 
-export type CourseDetail = {
+export type Course = {
   id: string;
   title: string;
   description?: string;
+  subtitle?: string;
   lessons: Lesson[];
 };
 
-export type GetCourseResponse = {
-  course: CourseDetail;
+export type GetCoursesResponse = {
+  courses: Course[];
 };
 
-export type LessonDetail = {
-  id: string;
-  title: string;
-  description?: string;
-
-  // Commit 5: audio support (optional)
-  audioUrl?: string; // or whatever your server returns
+export type GetCourseResponse = {
+  course: Course;
 };
 
 export type GetLessonResponse = {
-  lesson: LessonDetail;
+  lesson: Lesson;
 };

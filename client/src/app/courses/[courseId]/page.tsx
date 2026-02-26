@@ -2,8 +2,9 @@ import Link from "next/link";
 import { apiGet } from "@/lib/api";
 import type { GetCourseResponse } from "@/types/course";
 
+let data: GetCourseResponse | null = null;
+
 type PageProps = {
-  // Next.js can provide params asynchronously in App Router
   params: Promise<{
     courseId: string;
   }>;
@@ -34,7 +35,6 @@ export default async function CourseDetailPage({ params }: PageProps) {
         ← Back to courses
       </Link>
 
-      {/* Error state */}
       {error ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm font-medium text-red-800">
@@ -51,15 +51,11 @@ export default async function CourseDetailPage({ params }: PageProps) {
               {data.course.title}
             </h1>
 
-            {data.course.description ? (
-              <p className="mt-2 text-sm text-gray-600">
-                {data.course.description}
-              </p>
-            ) : (
-              <p className="mt-2 text-sm text-gray-500">
-                No description provided.
-              </p>
-            )}
+            <p className="mt-2 text-sm text-gray-600">
+              {data.course.description?.trim()
+                ? data.course.description
+                : "No description provided."}
+            </p>
           </header>
 
           <section>
@@ -77,15 +73,26 @@ export default async function CourseDetailPage({ params }: PageProps) {
                       href={`/courses/${courseId}/lessons/${lesson.id}`}
                       className="block rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
                     >
-                      <p className="font-medium text-gray-900">
-                        {lesson.title}
-                      </p>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {lesson.title}
+                          </p>
+                          {lesson.description ? (
+                            <p className="mt-1 text-sm text-gray-600">
+                              {lesson.description}
+                            </p>
+                          ) : (
+                            <p className="mt-1 text-sm text-gray-500">
+                              No description.
+                            </p>
+                          )}
+                        </div>
 
-                      {lesson.description ? (
-                        <p className="mt-1 text-sm text-gray-600">
-                          {lesson.description}
-                        </p>
-                      ) : null}
+                        <span className="shrink-0 text-sm text-gray-400">
+                          →
+                        </span>
+                      </div>
                     </Link>
                   </li>
                 ))}
